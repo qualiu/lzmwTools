@@ -9,7 +9,7 @@
 @echo off
 SetLocal EnableExtensions EnableDelayedExpansion
 
-where lzmw.exe 2>nul >nul || if not exist %~dp0\lzmw.exe powershell -ExecutionPolicy RemoteSigned -Command "Invoke-WebRequest -Uri https://github.com/qualiu/lzmw/blob/master/tools/lzmw.exe?raw=true -OutFile %~dp0\lzmw.exe"
+where lzmw.exe 2>nul >nul || if not exist %~dp0\lzmw.exe powershell -Command "Invoke-WebRequest -Uri https://github.com/qualiu/lzmw/blob/master/tools/lzmw.exe?raw=true -OutFile %~dp0\lzmw.exe"
 where lzmw.exe 2>nul >nul || set "PATH=%PATH%;%~dp0"
 
 if "%~1" == "" (
@@ -28,21 +28,19 @@ set DependentsDirectories=%3
 
 if "%~3" == "" for /f "tokens=*" %%a in ('lzmw -z %ExeOrDLLPath% -t "\\[^\\]+$" -o "" -PAC') do set DependentsDirectories="%%a"
 
-set DUMPBIN=dumpbin.exe
-where %DUMPBIN% 2>nul >nul
-if %ERRORLEVEL% NEQ 0 (
-    for /f "tokens=*" %%a in ('set VS ^| lzmw -it "^VS\d+COMNTOOLS=(.+?Visual Studio.[^\\\\]+).*" -o "$1" -PAC') do set "VSDir=%%a"
-    for /f "tokens=*" %%a in ('lzmw -l -f "^%DUMPBIN%$" -rp "!VSDir!" -d "\bx64" -PAC 2^>nul') do set DUMPBIN="%%a"
-    if not exist !DUMPBIN! (
-        echo Not found dumpbin.exe : DUMPBIN=!DUMPBIN! , VSDir = "!VSDir!" | lzmw -PA -t .+ -x dumpbin.exe
-        exist /b -1
+where dumpbin.exe 2>nul >nul
+if %ERRORLEVEL% GTR 0 (
+    for /f "tokens=*" %%a in ('set VS ^| lzmw -it "^VS\d+COMNTOOLS=(.+?Visual Studio.+?)\\?$" -o "$1" -PAC -T 1') do (
+        if exist "%%a\VsDevCmd.bat" call "%%a\VsDevCmd.bat" >nul
     )
 )
+where dumpbin.exe 2>nul >nul || (echo Not found dumpbin.exe | lzmw -PA -t "(dumpbin.exe)|\w+" & exit /b -1)
+
 
 if "%~2" == "" (
-    :: call %DUMPBIN% /DEPENDENTS %ExeOrDLLPath% | lzmw --nt "^Dump of" -t "^\s*(\S+.*\.dll)\s*$" -o "$1" -PA
+    :: call dumpbin.exe /DEPENDENTS %ExeOrDLLPath% | lzmw --nt "^Dump of" -t "^\s*(\S+.*\.dll)\s*$" -o "$1" -PA
     echo ---- First level dependents of %ExeOrDLLPath% ---------------- | lzmw -PA -t "(First level)" -e "[\w\.-]+\.(dll|exe)"
-    for /f "tokens=*" %%a in ('call %DUMPBIN% /DEPENDENTS %ExeOrDLLPath% ^| lzmw --nt "^Dump of" -t "^\s*(\S+.*\.dll)\s*$" -o "$1" -PAC') do (
+    for /f "tokens=*" %%a in ('call dumpbin.exe /DEPENDENTS %ExeOrDLLPath% ^| lzmw --nt "^Dump of" -t "^\s*(\S+.*\.dll)\s*$" -o "$1" -PAC') do (
         for /f "tokens=*" %%p in ('lzmw -z "%%a" -t "[\.\$\+]" -o "\\$0" -PAC') do set "toFindFilePattern=%%p"
         :: echo toFindFilePattern=!toFindFilePattern! | lzmw -PA -e .+
         echo lzmw -l -f "^^!toFindFilePattern!$" -rp %DependentsDirectories% --wt --sz -PAC >nul
@@ -61,7 +59,7 @@ if not exist %SaveDirectory%\%~nx1 (
 )
 
 echo ---- Dependents of %ExeOrDLLPath% ---------------- | lzmw -PA -e "[\w\.-]+\.(dll|exe)"
-for /f "tokens=*" %%a in ('call %DUMPBIN% /DEPENDENTS %ExeOrDLLPath% ^| lzmw --nt "^Dump of" -t "^\s*(\S+.*\.dll)\s*$" -o "$1" -PAC') do (
+for /f "tokens=*" %%a in ('call dumpbin.exe /DEPENDENTS %ExeOrDLLPath% ^| lzmw --nt "^Dump of" -t "^\s*(\S+.*\.dll)\s*$" -o "$1" -PAC') do (
     for /f "tokens=*" %%p in ('lzmw -z "%%a" -t "[\.\$\+]" -o "\\$0" -PAC') do set "toFindFilePattern=%%p"
     ::echo toFindFilePattern=!toFindFilePattern!
     echo lzmw -l -f "^^!toFindFilePattern!$" -rp %DependentsDirectories% --wt --sz -PAC >nul

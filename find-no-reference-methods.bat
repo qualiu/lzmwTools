@@ -4,12 +4,8 @@
 @echo off
 SetLocal EnableExtensions EnableDelayedExpansion
 
-set ThisDir=%~dp0
-if %ThisDir:~-1%==\ set ThisDir=%ThisDir:~0,-1%
-
-where lzmw.exe 2>nul >nul || if not exist %ThisDir%\lzmw.exe powershell -Command "Invoke-WebRequest -Uri https://github.com/qualiu/lzmw/blob/master/tools/lzmw.exe?raw=true -OutFile %ThisDir%\lzmw.exe"
-where lzmw.exe 2>nul >nul || set "PATH=%ThisDir%;%PATH%"
-
+where lzmw.exe 2>nul >nul || if not exist %~dp0\lzmw.exe powershell -Command "Invoke-WebRequest -Uri https://github.com/qualiu/lzmw/blob/master/tools/lzmw.exe?raw=true -OutFile %~dp0\lzmw.exe"
+where lzmw.exe 2>nul >nul || set "PATH=%PATH%;%~dp0"
 
 @if "%~3" == "" (
     echo on

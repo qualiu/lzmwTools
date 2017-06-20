@@ -34,6 +34,14 @@ if "%ToShowUsage%" == "1" (
     exit /b 0
 )
 
+:: Test args for lzmw.exe
+lzmw -z test-string %* >nul 2>nul
+if %ERRORLEVEL% LSS 0 (
+    echo Error parameters: %* , test with: -z test-string: | lzmw -aPA -t "Error \w+\S*(.*(test with.*(-z (test-string))))"
+    lzmw -z test-string %*
+    exit /b -1
+)
+
 set enhanceOption=
 set otherOption=
 set textCmd=
@@ -116,7 +124,5 @@ set LastArgs=%ignoreCaseOption% -t "^(?:\d+|ParentProcessId)\s+(\d+|ProcessId)\s
 if [%textCmd%%plainTextCmd%] == [] (
     call wmic process get %WMIC_ARGS% | lzmw %EachMultiLineToOneLine% | lzmw %ColumnReplace% -PAC | lzmw %LastArgs%
 ) else (
-    rem echo ParentProcessId ProcessId Name CommandLine | lzmw -it "^\w+\s+(\w+)\s+(\w+)\s+(\w+)" -PA
-    ::echo wmic process get %WMIC_ARGS% ^| lzmw %EachMultiLineToOneLine% ^| lzmw -PAC %textCmd% %textOption% %plainTextCmd% %plainTextOption% ^| lzmw %ColumnReplace% -PAC ^| lzmw %LastArgs% %plainTextCmdEnhance% %plainTextOption%
     call wmic process get %WMIC_ARGS% | lzmw %EachMultiLineToOneLine% | lzmw -PAC %ignoreCaseOption% %textCmd% %textOption% %plainTextCmd% %plainTextOption% | lzmw %ColumnReplace% -PAC | lzmw %LastArgs% %plainTextCmdEnhance% %plainTextOption%
 )

@@ -28,6 +28,14 @@ if "%ToShowUsage%" == "1" (
     exit /b 0
 )
 
+:: Test args for lzmw.exe
+lzmw -z test-string %* >nul 2>nul
+if %ERRORLEVEL% LSS 0 (
+    echo Error parameters: %* , test with: -z test-string: | lzmw -aPA -t "Error \w+\S*(.*(test with.*(-z (test-string))))"
+    lzmw -z test-string %*
+    exit /b -1
+)
+
 set allArgs=%*
 set allArgs=%allArgs:|= %
 set allArgs=%allArgs:"=%
@@ -41,4 +49,4 @@ if defined NotNumber (
     for %%a in ( %* ) do if "!pids!"=="" ( set "pids=/pid %%a" ) else ( set "pids=!pids! /pid %%a" )
 )
 
-taskkill /f !pids!
+lzmw -z "!pids!" -t "\d+" >nul || taskkill /f !pids!
