@@ -32,7 +32,7 @@ if not exist %DownloadsDirectory% md %DownloadsDirectory%
 
 set cygwin64_setup_exe=%DownloadsDirectory%\cygwin-setup-x86_64.exe
 
-@echo on
+@echo off
 
 if not exist %cygwin64_setup_exe% powershell -Command "Invoke-WebRequest -Uri https://www.cygwin.com/setup-x86_64.exe -OutFile %cygwin64_setup_exe%"
 

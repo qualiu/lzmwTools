@@ -4,7 +4,7 @@
 ::  commad line, name, process id, parent process id
 :: Filter self of lzmw.exe please append with:
 ::    --nx lzmw.exe or --nt lzmw\.exe
-:: ####### to "echo on" for debuging this script : ###################
+:: ####### to "echo off" for debuging this script : ###################
 :: lzmw -p psall.bat -it "^\s*(@?echo)\s+off\b" -o "$1 on" -R && lzmw -p psall.bat -it "^\s*rem\s+(echo\s+.*)$" -o "$1" -R
 :: ####### to restore "echo off" , run following : ###################
 :: lzmw -p psall.bat -it "^\s*(@?echo)\s+on\b" -o "$1 off" -R && lzmw -p psall.bat -it "^\s*(echo\s+.*)$" -o "rem $1" -L 30 -R
