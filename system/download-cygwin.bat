@@ -6,16 +6,21 @@
 SetLocal EnableExtensions EnableDelayedExpansion
 
 if "%~1" == "" (
-    echo Usage  : %~n0  Save_Directory  [Packages]              [Download_Cache_Directory]
-    echo Example: %~n0  D:\tmp\cygwin64 dos2unix,unix2dos,egrep D:\tmp\cygwin64-download-cache
+    echo Usage  : %~n0  Save_Directory  [Packages]                [Download_Cache_Directory]
+    echo Example: %~n0  D:\tmp\cygwin64 "dos2unix,unix2dos,egrep" D:\tmp\cygwin64-download-cache
     echo Example: %~n0  D:\tmp\cygwin64
+    echo Packages see: https://cygwin.com/packages/package_list.html
     exit /b -1
 )
 
 set Save_Directory=%~dp1%~nx1
 if %Save_Directory:~-1%==\ set Save_Directory=%Save_Directory:~0,-1%
 
-if "%~2" == "" ( set Packages=wget,gawk,grep,dos2unix,unix2dos,egrep ) else ( set Packages=%2 )
+:: git,git-clang-format,gedit,lz4,nc,perl,php,putty,pv,pwgen,screen,rstart,rsh,run,sed,shed,
+if "%~2" == "" (
+    set Packages=wget,gawk,grep,dos2unix,unix2dos,egrep,gcc-g++,bash,vim,gvim,zip,unzip,gzip,cmake,make,openssh,cgdb,gdb,gperf,bzip2,rsync,autossh,tar,expect,curl,clang,diffutils,cygutils,cygwin,duff,less
+) else ( set Packages=%2 )
+
 if "%~3" == "" (
     set Download_Cache_Directory=%Save_Directory%-download-cache
 ) else (
@@ -23,11 +28,11 @@ if "%~3" == "" (
 )
 
 :: --download  --verbose --no-shortcuts --no-startmenu --no-desktop  --prune-install
-set OtherOptions=--no-admin --quiet-mode --no-shortcuts --no-startmenu --no-desktop  --prune-install
+set OtherOptions=--no-admin --quiet-mode --no-shortcuts --no-startmenu --no-desktop  --prune-install --site http://cygwin.mirror.constant.com/
 
 set ThisDir=%~dp0
 if %ThisDir:~-1%==\ set ThisDir=%ThisDir:~0,-1%
-set DownloadsDirectory=%ThisDir%\downloads
+set DownloadsDirectory=%ThisDir%\..\downloads
 if not exist %DownloadsDirectory% md %DownloadsDirectory%
 
 set cygwin64_setup_exe=%DownloadsDirectory%\cygwin-setup-x86_64.exe
