@@ -546,7 +546,7 @@ function Update-Hadoop-Settings($hadoopDir) {
     $configYarnSite = Replace-Hadoop-Config-PlaceHolder $configYarnSite $hadoopDir
     Check-Update-Config $yarn_site_xml $configYarnSite "<name>\s*yarn.server.resourcemanager.address"
     
-    # dir /A:D /S /B D:\msgit\CompliantSpark.Substrate\test\app\hadoop-2.7.2 | lzmw --nt "(test|sources|examples)$|tomcat" -PAC
+    # dir /A:D /S /B test\app\hadoop-2.7.2 | lzmw --nt "(test|sources|examples)$|tomcat" -PAC
     # $jarLibPathes = ""
     # (Get-ChildItem -Recurse -Directory $hadoopDir |
     #    Where { $_.FullName -inotmatch "(test|sources|examples)$|tomcat" -and [IO.Directory]::GetFiles($_.FullName, "*.jar").Length -gt 0  }

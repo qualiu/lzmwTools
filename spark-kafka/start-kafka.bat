@@ -27,7 +27,7 @@ if %ERRORLEVEL% EQU 0 (
 )
 
 :: Wait for Zookeeper process.
-for /L %%k in (1,1,20) do (
+for /L %%k in (1,1,5) do (
     call psall -it "%ZookeeperProcessPattern%" --nx lzmw.exe > nul
     if !ERRORLEVEL! GTR 0 (
        call :StartKafaProcess
@@ -67,7 +67,7 @@ exit /b !ERRORLEVEL!
     :: Wait for Kafka process nodes
     set KafkaProcessPattern=-it "%KAFKA_HOME_Pattern%\S+config\\server-?\d*.properties" -x java.exe --nx lzmw.exe
     ::echo kafkaServerNodeCount=!kafkaServerNodeCount!, KafkaProcessPattern=!KafkaProcessPattern!
-    for /L %%k in (1,1,20) do (
+    for /L %%k in (1,1,5) do (
         call psall %KafkaProcessPattern% > nul
         :: echo return=!ERRORLEVEL!, kafkaServerNodeCount=!kafkaServerNodeCount!
         if !ERRORLEVEL! GEQ !kafkaServerNodeCount! exit /b 0

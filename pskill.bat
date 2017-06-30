@@ -31,7 +31,7 @@ if "%ToShowUsage%" == "1" (
 :: Test args for lzmw.exe
 lzmw -z test-string %* >nul 2>nul
 if %ERRORLEVEL% LSS 0 (
-    echo Error parameters: %* , test with: -z test-string: | lzmw -aPA -t "Error \w+\S*(.*(test with.*(-z (test-string))))"
+    echo Error parameters for %~nx0: %* , test with: -z test-string: | lzmw -aPA -t "Error.*for \S+(.*(test with.*(-z (test-string))))"
     lzmw -z test-string %*
     exit /b -1
 )

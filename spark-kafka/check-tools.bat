@@ -15,9 +15,9 @@ dir /b /A:D %TestRootDir%\app 2>nul | lzmw -it "^(kafka|spark|hadoop)" >nul
 :: Skip Spark and Hadoop currently, so match count = 1 other than 3
 if %ERRORLEVEL% GEQ 1 exit /b 0
 
-powershell -f %TestRootDir%\init-for-test.ps1 -SkipHadoop -SkipSpark
+powershell -f %TestRootDir%\init-download.ps1 -SkipHadoop -SkipSpark
 if %ERRORLEVEL% NEQ 0 (
-    echo init-for-test.ps1 return error = %ERRORLEVEL% | lzmw -aPA -t "error = (-?\d+)" -e "(\S+\.ps1)"
+    echo init-download.ps1 return error = %ERRORLEVEL% | lzmw -aPA -t "error = (-?\d+)" -e "(\S+\.ps1)"
 )
 
 exit /b %ERRORLEVEL%
