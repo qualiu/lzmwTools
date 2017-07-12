@@ -6,20 +6,31 @@
 SetLocal EnableExtensions EnableDelayedExpansion
 
 if "%~1" == "" (
-    echo Usage  : %~n0  Save_Directory  [Packages]                [Download_Cache_Directory]
-    echo Example: %~n0  D:\tmp\cygwin64 "dos2unix,unix2dos,egrep" D:\tmp\cygwin64-download-cache
+    echo Usage  : %~n0  Save_Directory   [Packages]                 [Download_Cache_Directory]
+    echo Example: %~n0  D:\tmp\cygwin64  "dos2unix,unix2dos,egrep"   D:\tmp\cygwin64-download-cache
     echo Example: %~n0  D:\tmp\cygwin64
     echo Packages see: https://cygwin.com/packages/package_list.html
     exit /b -1
 )
 
+where lzmw.exe 2>nul >nul || if not exist %~dp0\lzmw.exe powershell -Command "Invoke-WebRequest -Uri https://github.com/qualiu/lzmw/blob/master/tools/lzmw.exe?raw=true -OutFile %~dp0\lzmw.exe"
+where lzmw.exe 2>nul >nul || set "PATH=%PATH%;%~dp0"
+
+where nin.exe 2>nul >nul || if not exist %~dp0\nin.exe powershell -Command "Invoke-WebRequest -Uri https://github.com/qualiu/lzmw/blob/master/tools/nin.exe?raw=true -OutFile %~dp0\nin.exe"
+where nin.exe 2>nul >nul || set "PATH=%PATH%;%~dp0"
+
 set Save_Directory=%~dp1%~nx1
 if %Save_Directory:~-1%==\ set Save_Directory=%Save_Directory:~0,-1%
+set DefaultPackages=wget,gawk,grep,dos2unix,unix2dos,egrep,gcc-g++,bash,vim,gvim,zip,unzip,gzip,cmake,make,openssh,cgdb,gdb,gperf,bzip2,rsync,autossh,tar,expect,curl,clang,diffutils,cygutils,cygwin,duff,less,binutils,cygwin32-gcc-g++,cygwin32-gcc-core,cygwin32-binutils,cygwin32
 
 :: git,git-clang-format,gedit,lz4,nc,perl,php,putty,pv,pwgen,screen,rstart,rsh,run,sed,shed,
 if "%~2" == "" (
-    set Packages=wget,gawk,grep,dos2unix,unix2dos,egrep,gcc-g++,bash,vim,gvim,zip,unzip,gzip,cmake,make,openssh,cgdb,gdb,gperf,bzip2,rsync,autossh,tar,expect,curl,clang,diffutils,cygutils,cygwin,duff,less,binutils,cygwin32-gcc-g++,cygwin32-gcc-core,cygwin32-binutils,cygwin32
-) else ( set Packages=%2 )
+    set Packages=%DefaultPackages%
+) else (
+    for /f "tokens=*" %%a in ('lzmw -z "%DefaultPackages%,%~2" -t "\s*,\s*" -o "\n" -aPAC ^| nin nul -iuPAC ^| lzmw -S -t "[\r\n]+\s*(\S+)" -o ",$1" -PAC') do set Packages=%%a
+)
+
+echo Packages=%Packages%
 
 if "%~3" == "" (
     set Download_Cache_Directory=%Save_Directory%-download-cache
