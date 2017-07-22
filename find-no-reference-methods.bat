@@ -10,7 +10,7 @@ where lzmw.exe 2>nul >nul || set "PATH=%PATH%;%~dp0"
 @if "%~3" == "" (
     echo on
     set enhanceCommand=-aPA -e %~n0 -it "\w+Dir\w+|(\w+name\w+|(\bMethod\w+Cap\w+|(other\w+)))"
-    set enhanceExamples=-aPA -e %~n0 -it "src\\scala|(\\.scala\$.\s+(\S+(\s*-?.*)))
+    set enhanceExamples=-aPA -e %~n0 -it "src\\scala|(\\.scala\$.)\s+(\S+)\s*(-?.*)"
     echo Usage  : %~n0  Files_or_Directories  File_Name_Pattern  Method_Capture1_Pattern  [Other_lzmw_Options: Optional] | lzmw !enhanceCommand!
     echo Example: %~n0  src\scala  "\.scala$"  "^\s*def\s+(\w+)\s*[\(:].*"  -P        | lzmw !enhanceExamples!
     echo Example: %~n0  src\scala  "\.scala$"  "^\s*def\s+(\w+)\s*[\(:].*"	-U 2 -D 2 | lzmw !enhanceExamples!

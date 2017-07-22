@@ -6,8 +6,8 @@
 SetLocal EnableExtensions EnableDelayedExpansion
 
 if "%~1" == "" (
-    echo Usage  : %~n0  Save_Directory   [Packages]                 [Download_Cache_Directory]
-    echo Example: %~n0  D:\tmp\cygwin64  "dos2unix,unix2dos,egrep"   D:\tmp\cygwin64-download-cache
+    echo Usage  : %~n0  Save_Directory   [Packages]                 [Just_Display_Command]  [Download_Cache_Directory]      [DefaultPackages]
+    echo Example: %~n0  D:\tmp\cygwin64  "dos2unix,unix2dos,egrep"   1  D:\tmp\cygwin64-download-cache  "wget,autossh,rsync,curl,cygwin32-binutils"
     echo Example: %~n0  D:\tmp\cygwin64
     echo Packages see: https://cygwin.com/packages/package_list.html
     exit /b -1
@@ -21,18 +21,23 @@ where nin.exe 2>nul >nul || set "PATH=%PATH%;%~dp0"
 
 set Save_Directory=%~dp1%~nx1
 if %Save_Directory:~-1%==\ set Save_Directory=%Save_Directory:~0,-1%
-set DefaultPackages=wget,gawk,grep,dos2unix,unix2dos,egrep,gcc-g++,bash,vim,gvim,zip,unzip,gzip,cmake,make,openssh,cgdb,gdb,gperf,bzip2,rsync,autossh,tar,expect,curl,clang,diffutils,cygutils,cygwin,duff,less,binutils,cygwin32-gcc-g++,cygwin32-gcc-core,cygwin32-binutils,cygwin32
+if [%5] == [] if not defined DefaultPackages set "DefaultPackages=wget,gawk,grep,dos2unix,unix2dos,egrep,gcc-g++,bash,vim,gvim,zip,unzip,gzip,cmake,make,openssh,cgdb,gdb,gperf,bzip2,rsync,autossh,tar,expect,curl,clang,diffutils,cygutils,cygwin,duff,less,binutils,cygwin32-gcc-g++,cygwin32-gcc-core,cygwin32-binutils,cygwin32"
 
 :: git,git-clang-format,gedit,lz4,nc,perl,php,putty,pv,pwgen,screen,rstart,rsh,run,sed,shed,
 if "%~2" == "" (
     set Packages=%DefaultPackages%
 ) else (
-    for /f "tokens=*" %%a in ('lzmw -z "%DefaultPackages%,%~2" -t "\s*,\s*" -o "\n" -aPAC ^| nin nul -iuPAC ^| lzmw -S -t "[\r\n]+\s*(\S+)" -o ",$1" -PAC') do set Packages=%%a
+    ::Remove double quotes
+    set DefaultPackages=%DefaultPackages:"=%
+    for /f "tokens=*" %%a in ('lzmw -z !DefaultPackages! -t "\s+" -o "" -aPAC') do set "DefaultPackages=%%a"
+    if not "!DefaultPackages!" == "" set "DefaultPackages=,!DefaultPackages!"
+    for /f "tokens=*" %%a in ('lzmw -z "%~2!DefaultPackages!" -t "\s*,\s*" -o "\n" -aPAC ^| nin nul -iuPAC ^| lzmw -S -t "[\r\n]+\s*(\S+)" -o ",$1" -PAC ^| lzmw -t ",\W*$" -o "" -aPAC ') do set "Packages=%%a"
 )
 
-echo Packages=%Packages%
+set Just_Display_Command=%3
+echo Packages=!Packages!| lzmw -aPA -ie "(Packages)=(.+)"
 
-if "%~3" == "" (
+if "%~4" == "" (
     set Download_Cache_Directory=%Save_Directory%-download-cache
 ) else (
     set Download_Cache_Directory=%~dp3%~nx3
@@ -48,10 +53,13 @@ if not exist %DownloadsDirectory% md %DownloadsDirectory%
 
 set cygwin64_setup_exe=%DownloadsDirectory%\cygwin-setup-x86_64.exe
 
-@echo off
-
 if not exist %cygwin64_setup_exe% powershell -Command "Invoke-WebRequest -Uri https://www.cygwin.com/setup-x86_64.exe -OutFile %cygwin64_setup_exe%"
 
-%cygwin64_setup_exe% --root %Save_Directory% --local-package-dir %Download_Cache_Directory% --packages %Packages% --arch x86_64 %OtherOptions%
+echo %cygwin64_setup_exe% --root %Save_Directory% --local-package-dir %Download_Cache_Directory% --packages %Packages% --arch x86_64 %OtherOptions% | lzmw -aPA -x %cygwin64_setup_exe% -ie "\w+"
 
-@echo off
+lzmw -it "\w+" -z "%Packages%" >nul
+if !ERRORLEVEL! EQU 0 echo No packages. | lzmw -aPA -t "(.+)"  & exit /b -1
+
+if "%Just_Display_Command%" == "1" exit /b 0
+
+%cygwin64_setup_exe% --root %Save_Directory% --local-package-dir %Download_Cache_Directory% --packages %Packages% --arch x86_64 %OtherOptions%

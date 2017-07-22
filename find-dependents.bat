@@ -16,7 +16,7 @@ if "%~1" == "" (
     echo Usage  : %~n0  Exe-or-DLL-Path           [Save-Directory]   [Dependents-Directories: Optional; Separated by comma ','] | lzmw -e %~n0 -aPA -t "Exe-or-DLL-Path|(Save-Directory|(Dependents-Directories))"
     echo Example: %~n0  C:\Windows\System32\Robocopy.exe | lzmw -aPA -e %~n0 -t "\S+Robocopy.exe|(\S+tmp\S+|(\S+bin\s*$))"
     echo Example: %~n0  D:\cygwin64\bin\curl.exe  d:\tmp\curl-all    D:\cygwin64\bin       | lzmw -aPA -e %~n0 -t "\S+curl.exe|(\S+tmp\S+|(\S+bin\s*$))"
-    echo Example: %~n0  D:\cygwin64\bin\curl.exe  "" "d:\cygwin64\bin,c:\Windows\System32" | lzmw -aPA -e %~n0 -t "\S+curl.exe|(\s+\W{2}\s+|(\S+bin,\S+))"
+    echo Example: %~n0  D:\cygwin64\bin\curl.exe  "" "d:\cygwin64\bin,c:\Windows\System32" | lzmw -aPA -e %~n0 -t "\S+curl.exe|\s+(\W{2}(?=\s+)|(\S+bin,\S+))"
     echo Default Dependents-Directory = Exe-Directory , for the above examples, is D:\cygwin64\bin | lzmw -aPA -t "Exe-\S+|((Dependents-Directory|\S+bin))"
     echo Only displays first level dependents if Save-Directory not provided. | lzmw -aPA -it "Only.*first level|(Save-Directory)"
     exit /b -1

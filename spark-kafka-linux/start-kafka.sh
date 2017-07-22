@@ -1,11 +1,13 @@
 #!/bin/sh
-cd $(dirname $0)
-thisDir=$PWD
+ThisDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-alias lzmw=~/qualiu/tools/lzmw.gcc48
-alias nin=~/qualiu/tools/nin.gcc48
+sh $ThisDir/../check-download-tools.sh
+if [ $? -ne 0 ]; then
+    echo "Failed to call $ThisDir/../check-download-tools.sh"
+    exit -1
+fi
 
-kafkaRoot=$thisDir/$(ls -d */ | lzmw -t "(kafka.+)/$" -o '$1' -PAC -T 1)
+kafkaRoot=$ThisDir/$(ls -d */ | lzmw -t "(kafka.+)/$" -o '$1' -PAC -T 1)
 kafkaBin=$kafkaRoot/bin
 kafkaConfigDir=$kafkaRoot/config
 
